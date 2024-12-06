@@ -1,0 +1,3 @@
+Function that returns the prompt according to the inputs.
+Mechanism to reprompt if jsonify fails.
+Test out the models to see which one is the best.
