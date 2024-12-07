@@ -1,12 +1,4 @@
-from ollama import chat
-from ollama import ChatResponse
+from query_model import query_model
+from utils.models import Model
 
-response: ChatResponse = chat(model='llama3.2', messages=[
-  {
-    'role': 'user',
-    'content': 'This is a test message. Just respond with hi!',
-  },
-])
-print(response['message']['content'])
-# or access fields directly from the response object
-print(response.message.content)
+print(query_model("Respond to this message with 'hi'. Structure your response as a json. Do not add any explanations.", Model.GEMMA))
