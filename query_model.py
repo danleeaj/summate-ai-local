@@ -1,7 +1,7 @@
 from ollama import chat
 from ollama import ChatResponse
 
-from utils.models import Model
+from utils.llm_models import Model
 
 def query_model(query: str, model: Model):
 
@@ -12,4 +12,4 @@ def query_model(query: str, model: Model):
         }
     ])
 
-    return test_message_response['message']['content']
+    return test_message_response.message.content
