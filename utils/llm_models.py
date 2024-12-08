@@ -1,6 +1,6 @@
 from enum import Enum
 
-class Model(Enum):
+class LLMModel(Enum):
     """
     Represents the available LLM options for the debate system.
     """
