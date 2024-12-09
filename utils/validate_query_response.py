@@ -10,11 +10,6 @@ def clean_string(input: str) -> str:
     Cleans and parses JSON-like strings into a JSON-parsable format.
     """
 
-    test_value = "Hello"
-    ic(test_value)
-
-    ic(input)
-
     clean_input = input.strip() # Remove all starting and trailing whitespace
     ic(clean_input)
     clean_input = clean_input.replace("```json", "").replace("```", "") # Removes markdown if it's there
@@ -30,10 +25,6 @@ def clean_string(input: str) -> str:
 
     if not clean_input.startswith("{") and not clean_input.endswith("}"):
         clean_input = "{" + clean_input + "}"
-
-    ic(clean_input)
-    print(clean_input)
-    print()
 
     return clean_input
 
