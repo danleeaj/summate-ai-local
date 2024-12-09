@@ -13,7 +13,7 @@ from models.response_models.evaluator_response_model import EvaluatorResponseMod
 
 from utils.validate_query_response import validate_query_response
 
-def query_large_language_model(query: List[BaseModel], model: LLMModel, validation_model: BaseModel):
+def query_large_language_model(query: List[BaseModel], model: LLMModel, validation_model: BaseModel) -> EvaluatorResponseModel | GraderResponseModel:
     
     message_list = []
 
