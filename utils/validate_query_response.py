@@ -11,16 +11,9 @@ def clean_string(input: str) -> str:
     """
 
     clean_input = input.strip() # Remove all starting and trailing whitespace
-    ic(clean_input)
     clean_input = clean_input.replace("```json", "").replace("```", "") # Removes markdown if it's there
-    ic(clean_input)
-
     clean_input = clean_input.replace("\\\"", "\"") # Replaces \" with "
-    ic(clean_input)
-
     clean_input = clean_input.replace("\"\"", "\"") # Replaces potential "" with "
-    ic(clean_input)
-
     clean_input = clean_input.strip()
 
     if not clean_input.startswith("{") and not clean_input.endswith("}"):
