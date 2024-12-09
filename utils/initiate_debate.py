@@ -13,8 +13,6 @@ from models.debate_models.debate_model import DebateModel
 from models.debate_models.response_model import ResponseModel
 from models.debate_models.round_model import RoundModel
 
-from utils.prompt_chaining import chain_message
-
 from datetime import datetime, timedelta
 
 from icecream import ic
