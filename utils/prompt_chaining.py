@@ -1,14 +1,6 @@
 from typing import List, Optional
 from models.prompt_models.message_model import MessageModel
 
-def add_message(next_message: MessageModel, previous_message: Optional[List[MessageModel]] = None):
-    
-    chat_history = []
+def chain_message(next_message: List[MessageModel] | MessageModel, previous_message: Optional[List[MessageModel]] = None):
 
-    if previous_message:
-        for message in previous_message:
-            chat_history.append(message)
-    else:
-        chat_history.append(next_message)
-
-    return chat_history
+    return previous_message + next_message
