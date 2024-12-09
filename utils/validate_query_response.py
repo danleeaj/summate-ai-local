@@ -29,7 +29,10 @@ def validate_query_response(input:str, model:BaseModel) -> BaseModel:
         return parsed_model
     except ValidationError as e:
         print("Validation Error:", e)
+        print(clean_response)
     except json.JSONDecodeError as e:
         print("JSON Decode Error:", e)
+        print(clean_response)
     except Exception as e:
         print("Unexpected Error:", e)
+        print(clean_response)

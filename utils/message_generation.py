@@ -26,6 +26,13 @@ def initial_prompt_to_evaluator(grader1response: GraderResponseModel, grader2res
                                content=f"""
         Grader 1 evaluation: '{grader1response_string}'.
         Grader 2 evaluation: '{grader2response_string}'.
+
+        IMPORTANT INSTRUCTIONS:
+        1. Your ENTIRE and ONLY output must be the JSON response.
+        2. Do NOT write any text before or after the JSON.
+        3. Strictly follow the JSON format with the keys: "gradersAgree", "consensusEvaluation", and "explanation".
+        4. Ensure the output is valid, parseable JSON.
+
         Your job is to compare the evaluations from Grader 1 and Grader 2. If their evaluations on whether the rubric component is satisfied (YES) or not satisfied (NO) are in agreement with each other, then provide their consensus evaluation and say that they agree by evaluating gradersAgree as TRUE.
         To determine if the graders are in agreement, follow these rules:
         1. If both graders provide the same evaluation (YES or NO), they are considered to be in agreement.
@@ -70,6 +77,13 @@ def initial_prompt_to_grader(query: QueryModel) -> List[MessageModel]:
         "rubricComponentSatisfied": <'Yes'/'No'>
         "explanation": <A string with a few sentences explaining your reasoning>
         Ensure that the property names are enclosed in double quotes.
+
+        IMPORTANT INSTRUCTIONS:
+        1. Your ENTIRE and ONLY output must be the JSON response.
+        2. Do NOT write any text before or after the JSON.
+        3. Strictly follow the JSON format with the keys: "rubricComponentSatisfied" and "explanation".
+        4. Ensure the output is valid, parseable JSON.
+
         Additionally, please consider the following when evaluating the response:
         * Maintain a balanced and confident approach, acknowledging the validity of different perspectives without becoming overly conforming.
         * Justify your evaluation with sound reasoning to avoid getting trapped in an endless feedback loop of contradictory arguments.
@@ -95,7 +109,7 @@ def followup_prompt_to_grader(opposing_grader_response: GraderResponseModel) -> 
     """
 
     user_prompt = MessageModel(role="user",
-                               content=f"The other agent argues '{opposing_grader_response.rubricComponentSatisfied}'. The reason is '{opposing_grader_response.explanation}'. Please reevaluate your answer and give a new reply in the same format, taking into account the guidelines provided earlier about maintaining confidence, acknowledging different perspectives, and avoiding conformity traps. Maintain your original answer if you still believe you were correct.")
+                               content=f"The other agent argues '{opposing_grader_response.rubricComponentSatisfied}'. The reason is '{opposing_grader_response.explanation}'. Please reevaluate your answer and give a new reply in the same format, taking into account the guidelines provided earlier about maintaining confidence, acknowledging different perspectives, and avoiding conformity traps. Maintain your original answer if you still believe you were correct. Please ensure you are still responding on the same JSON format as specified previously.")
 
     message_chain = [user_prompt]
 

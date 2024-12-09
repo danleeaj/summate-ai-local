@@ -13,13 +13,11 @@ class ResponseModel(BaseModel):
         type (Literal): The type of agent sending the response (either 'Evaluator' or 'Grader').
         model (Model): The model of said agent.
         content (str): The content of the response in JSON.
-        time_requested (datetime): The timestamp when the response is generated.
-        time_completed (datetime): The timestamp when the response was completed.
-        time_taken (datetime.timedelta): The time it took for the response to process.
+        time_requested (datetime): The timestamp when a response is requested.
+        time_completed (datetime): The timestamp when a response is returned to the framework.
     """
     type: Literal["Evaluator", "Grader"]
     model: LLMModel
     content: EvaluatorResponseModel | GraderResponseModel
     time_requested: datetime
     time_completed: datetime
-    time_taken: timedelta
