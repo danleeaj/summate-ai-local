@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 from typing import Literal
 from datetime import datetime, timedelta
-from utils.llm_models import Model
+from utils.llm_models import LLMModel
+from models.response_models.evaluator_response_model import EvaluatorResponseModel
+from models.response_models.grader_response_model import GraderResponseModel
 
 class ResponseModel(BaseModel):
     """
@@ -16,8 +18,8 @@ class ResponseModel(BaseModel):
         time_taken (datetime.timedelta): The time it took for the response to process.
     """
     type: Literal["Evaluator", "Grader"]
-    model: Model
-    content: str
+    model: LLMModel
+    content: EvaluatorResponseModel | GraderResponseModel
     time_requested: datetime
     time_completed: datetime
     time_taken: timedelta
