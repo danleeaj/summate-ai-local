@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List
-from models.round_model import RoundModel
-from models.query_model import QueryModel
+from models.debate_models.round_model import RoundModel
+from models.prompt_models.query_model import QueryModel
 
 class DebateModel(BaseModel):
     """

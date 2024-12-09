@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from models.response_model import ResponseModel
+from models.debate_models.response_model import ResponseModel
 
 class RoundModel(BaseModel):
     """
