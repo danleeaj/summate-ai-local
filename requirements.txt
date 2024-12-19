@@ -1,3 +1,6 @@
 ollama
 pydantic
 pytest
+
+# GUI Stuff -----
+# PySide6
