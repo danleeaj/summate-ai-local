@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 
 from icecream import ic
 
-def initiate_debate(query: QueryModel) -> DebateModel:
+def initiate_debate(query: QueryModel, grader1_model: LLMModel = LLMModel.GEMMA, grader2_model: LLMModel = LLMModel.GEMMA, evaluator_model: LLMModel = LLMModel.GEMMA) -> DebateModel:
 
     grader1_message_list = initial_prompt_to_grader(query)
     grader2_message_list = initial_prompt_to_grader(query)
@@ -32,11 +32,11 @@ def initiate_debate(query: QueryModel) -> DebateModel:
         grader1_start_time = datetime.now()
 
         grader1_response = query_large_language_model(query=grader1_message_list,
-                                                    model=LLMModel.LLAMA,
+                                                    model=grader1_model,
                                                     validation_model=GraderResponseModel)
         
         grader1_response_formatted = ResponseModel(type="Grader",
-                                                model=LLMModel.GEMMA,
+                                                model=grader1_model,
                                                 content=grader1_response,
                                                 time_requested=grader1_start_time,
                                                 time_completed=datetime.now())
@@ -46,11 +46,11 @@ def initiate_debate(query: QueryModel) -> DebateModel:
         grader2_start_time = datetime.now()
         
         grader2_response = query_large_language_model(query=grader2_message_list,
-                                                    model=LLMModel.GEMMA,
+                                                    model=grader2_model,
                                                     validation_model=GraderResponseModel)
 
         grader2_response_formatted = ResponseModel(type="Grader",
-                                                model=LLMModel.GEMMA,
+                                                model=grader2_model,
                                                 content=grader2_response,
                                                 time_requested=grader2_start_time,
                                                 time_completed=datetime.now())
@@ -60,11 +60,11 @@ def initiate_debate(query: QueryModel) -> DebateModel:
         evaluator_start_time = datetime.now()
 
         evaluator_response = query_large_language_model(query=initial_prompt_to_evaluator(grader1_response, grader2_response),
-                                                        model=LLMModel.GEMMA,
+                                                        model=evaluator_model,
                                                         validation_model=EvaluatorResponseModel)
 
         evaluator_response_formatted = ResponseModel(type="Evaluator",
-                                                    model=LLMModel.GEMMA,
+                                                    model=evaluator_model,
                                                     content=evaluator_response,
                                                     time_requested=evaluator_start_time,
                                                     time_completed=datetime.now())
