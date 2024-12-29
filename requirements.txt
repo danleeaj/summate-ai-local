@@ -2,5 +2,9 @@ ollama
 pydantic
 pytest
 
+psycopg
+
+python-dotenv
+
 # GUI Stuff -----
 # PySide6
