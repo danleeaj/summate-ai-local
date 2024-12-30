@@ -38,6 +38,9 @@ def add_debate(conn, debate: DebateModel, rubric_id: int, response_id: int) -> s
 
 def add_question(conn, question: QuestionModel, rubric_components: List[RubricModel]) -> int:
 
+    if not question.question_title:
+        question.question_title = question.question_text[:20]
+
     with conn.cursor() as cur:
 
         try:
@@ -92,33 +95,23 @@ def add_response(conn, response: ResponseModel) -> int:
 
 def main():
 
-    connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
+    # connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
 
-    with psycopg.connect(connection_string) as conn:
+    # question = QuestionModel(question_title="Pearson coefficient", question_text="Explain the Pearson correlation coefficient (r) in terms of: a. What insights it can provide about data and how to interpret it. b. How it can be calculated (step-by-step) using the dot product of two vectors. c. EXTRA CREDIT: Using vectors [3, 9] and [1, 3], calculate the Pearson correlation coefficient.")
 
-        with conn.cursor() as cur:
+    # rubric_components = [
+    #     RubricModel(score=1,component_text="Response states that the Pearson correlation coefficient measures the strength of a linear relationship"),
+    #     RubricModel(score=1,component_text="Response explains that +1 indicates a perfect positive linear relationship"),
+    #     RubricModel(score=1,component_text="Response explains that the coefficient ranges from -1 to +1"),
+    #     RubricModel(score=1,component_text="Response explains that -1 indicates a perfect negative linear relationship"),
+    #     RubricModel(score=1,component_text="Response explains that values closer to 0 indicate weaker relationships"),
+    # ]
 
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS testing (
-                    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                    name character varying(255),
-                    age integer,
-                    gender character(1)
-                );
-            """)
+    # with psycopg.connect(connection_string) as conn:
 
-            cur.execute("""INSERT INTO testing (name, age, gender)
-                        VALUES ('Mike', 30, 'm')
-                        RETURNING id;
-                        """)
-            response_id = cur.fetchone()[0]
+    #     add_question(conn, question, rubric_components)
 
-            conn.commit()
-
-            cur.close()
-            conn.close()
-
-            print(f"Inserted at {response_id}")
+    return
 
 if __name__ == "__main__":
     main()
