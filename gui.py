@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                               QHBoxLayout, QLineEdit, QTextEdit, QPushButton, 
-                              QLabel, QComboBox, QScrollArea, QTabWidget)
+                              QLabel, QComboBox, QScrollArea, QTabWidget, QSpinBox,
+                              QPlainTextEdit)
 
 import sys
 import psycopg
@@ -18,11 +19,22 @@ class RubricComponentWidget(QWidget):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
         
-        self.text_input = QTextEdit()
-        self.text_input.setMaximumHeight(30)
+        # Score input
+        self.score_label = QLabel("Score:")
+        self.score_input = QSpinBox()
+        self.score_input.setMinimum(0)
+        self.score_input.setMaximumWidth(60)
+        
+        # Text input
+        self.text_input = QPlainTextEdit()
+        self.text_input.setMaximumHeight(50)
+        
+        # Remove button
         self.remove_button = QPushButton("-")
         self.remove_button.setMaximumWidth(30)
         
+        self.layout.addWidget(self.score_label)
+        self.layout.addWidget(self.score_input)
         self.layout.addWidget(self.text_input)
         self.layout.addWidget(self.remove_button)
         
@@ -32,8 +44,11 @@ class RubricComponentWidget(QWidget):
         self.setParent(None)
         self.deleteLater()
         
-    def get_text(self):
-        return self.text_input.toPlainText()
+    def get_data(self):
+        return {
+            'score': self.score_input.value() or None,
+            'component_text': self.text_input.toPlainText()
+        }
 
 class AddQuestionWidget(QWidget):
     def __init__(self, parent=None):
@@ -95,9 +110,9 @@ class AddQuestionWidget(QWidget):
         for i in range(self.rubric_layout.count()):
             widget = self.rubric_layout.itemAt(i).widget()
             if isinstance(widget, RubricComponentWidget):
-                text = widget.get_text()
-                if text:
-                    rubric_components.append(RubricModel(component_text=text))
+                data = widget.get_data()
+                if data['component_text']:  # Only add if there's text
+                    rubric_components.append(RubricModel(**data))
                     
         # Create question model
         question = QuestionModel(
@@ -109,15 +124,17 @@ class AddQuestionWidget(QWidget):
         connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
         with psycopg.connect(connection_string) as conn:
             add_question(conn, question, rubric_components)
+        
+        sys.exit(app.exec())
             
         # Clear inputs
-        self.title_input.clear()
-        self.content_input.clear()
-        while self.rubric_layout.count():
-            widget = self.rubric_layout.itemAt(0).widget()
-            if widget:
-                widget.deleteLater()
-        self.add_rubric_component()
+        # self.title_input.clear()
+        # self.content_input.clear()
+        # while self.rubric_layout.count():
+        #     widget = self.rubric_layout.itemAt(0).widget()
+        #     if widget:
+        #         widget.deleteLater()
+        # self.add_rubric_component()
 
 class AddResponseWidget(QWidget):
     def __init__(self, parent=None):
@@ -128,6 +145,10 @@ class AddResponseWidget(QWidget):
         self.question_label = QLabel("Select Question:")
         self.question_combo = QComboBox()
         self.refresh_questions()
+
+        # Identifier
+        self.id_label = QLabel("Identifier:")
+        self.id_input = QLineEdit()
         
         # Response text
         self.response_label = QLabel("Response Text:")
@@ -139,6 +160,8 @@ class AddResponseWidget(QWidget):
         # Add to layout
         self.layout.addWidget(self.question_label)
         self.layout.addWidget(self.question_combo)
+        self.layout.addWidget(self.id_label)
+        self.layout.addWidget(self.id_input)
         self.layout.addWidget(self.response_label)
         self.layout.addWidget(self.response_input)
         self.layout.addWidget(self.submit_button)
@@ -157,11 +180,13 @@ class AddResponseWidget(QWidget):
     def submit_response(self):
         question_id = self.question_combo.currentData()
         response_text = self.response_input.toPlainText()
+        identifier = self.id_input.text()
         
         if not response_text:
             return  # Add error handling
             
         response = ResponseModel(
+            identifier=identifier,
             question_id=question_id,
             response_text=response_text
         )
@@ -172,6 +197,7 @@ class AddResponseWidget(QWidget):
             
         # Clear input
         self.response_input.clear()
+        self.id_input.clear()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -193,7 +219,10 @@ class MainWindow(QMainWindow):
         self.resize(800, 600)
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+    try:
+        app = QApplication(sys.argv)
+        window = MainWindow()
+        window.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        print(f"Error: {e}")

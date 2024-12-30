@@ -9,5 +9,5 @@ class RubricModel(BaseModel):
         score (Optional[int]): The score for the rubric component.
         component_text (str): The text describing the rubric component.
     """
-    score: Optional[int]
+    score: Optional[int] = None
     component_text: str
