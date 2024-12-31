@@ -78,11 +78,11 @@ def add_response(conn, response: ResponseModel) -> int:
 
            cur.execute(
                """
-               INSERT INTO responses (question_id, response_text)
-               VALUES (%s, %s)
+               INSERT INTO responses (question_id, response_text, student_id)
+               VALUES (%s, %s, %s)
                RETURNING id
                """,
-               (response.question_id, response.response_text)
+               (response.question_id, response.response_text, response.identifier)
            )
            response_id = cur.fetchone()[0]
            
