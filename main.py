@@ -1,5 +1,3 @@
-
-
 import psycopg
 from utils.config import connection_dict
 from utils.initiate_debate import initiate_debate
@@ -11,9 +9,7 @@ def process_unevaluated_responses():
     
     with psycopg.connect(connection_string) as conn:
         with conn.cursor() as cur:
-            # Get all responses that haven't been evaluated yet
-            # by checking which response_id and rubric_id combinations
-            # don't exist in the debates table
+
             cur.execute("""
                 SELECT 
                     r.id as response_id,
@@ -35,7 +31,6 @@ def process_unevaluated_responses():
             for record in unevaluated:
                 response_id, response_text, question_id, question_text, question_title, rubric_id, rubric_component = record
                 
-                # Create query model for debate
                 query = QueryModel(
                     rubric_component=rubric_component,
                     student_response=response_text,
@@ -43,10 +38,9 @@ def process_unevaluated_responses():
                 )
                 
                 try:
-                    # Initiate debate
+
                     debate_result = initiate_debate(query)
                     
-                    # Store debate result in database
                     add_debate(
                         conn=conn,
                         debate=debate_result,
