@@ -72,25 +72,40 @@ def initial_prompt_to_grader(query: QueryModel) -> List[MessageModel]:
         The rubric component is: '{rubric_component}'.
         The student response is: '{student_response}'.
         {'The context is: ' + f"'{context}'" if context else ''}
-        Your job is to carefully read the response and determine if it explicitly addresses the rubric component as stated, regardless of whether the rubric component or the response is factually correct. If there are no relevant responses, indicate that as well.
+        Your primary task is to determine if the student's response demonstrates understanding of the core concepts in the rubric component, regardless of the exact wording used. Follow these evaluation steps:
+
+        1. First identify the key concepts in the rubric component
+        2. Then look for these concepts in the student response, including semantically equivalent expressions
+        3. Consider whether the response shows understanding of these concepts, even if expressed differently
+        4. Only mark as unsatisfied if the core concepts are truly missing or misunderstood
+
+        Important evaluation guidelines:
+        - Focus on conceptual understanding rather than exact wording matches
+        - Students may use different terminology to express the same ideas
+        - Consider the context of the field when evaluating semantic equivalence
+        - Look for evidence of understanding rather than perfect articulation
+        - If a concept is implied through a clear description of its implementation or consequences, consider it present
+
+        Examples of semantic equivalence:
+        - "Gather all lines" = "Compile all lines" = "Collect all lines" = "Put together all lines"
+        - "Gauge reliability" = "Assess reliability" = "Evaluate reliability" = "Determine reliability"
+        - "Plot together" = "Display together" = "Show together" = "Visualize together"
+
         Return your evaluation in JSON format with the following keys:
-        "rubricComponentSatisfied": <'Yes'/'No'>
-        "explanation": <A string with a few sentences explaining your reasoning>
-        Ensure that the property names are enclosed in double quotes.
+        "rubricComponentSatisfied": <"Yes"/"No">
+        "explanation": <A string explaining your reasoning that references specific parts of both the rubric and response>
 
         IMPORTANT INSTRUCTIONS:
-        1. Your ENTIRE and ONLY output must be the JSON response.
-        2. Do NOT write any text before or after the JSON.
-        3. Strictly follow the JSON format with the keys: "rubricComponentSatisfied" and "explanation".
-        4. Ensure the output is valid, parseable JSON.
+        1. Your ENTIRE and ONLY output must be the JSON response
+        2. Do NOT write any text before or after the JSON
+        3. Ensure the output is valid, parseable JSON
+        4. Your explanation should explicitly connect parts of the response to the rubric requirements
 
-        Additionally, please consider the following when evaluating the response:
-        * Maintain a balanced and confident approach, acknowledging the validity of different perspectives without becoming overly conforming.
-        * Justify your evaluation with sound reasoning to avoid getting trapped in an endless feedback loop of contradictory arguments.
-        * Express any uncertainty or request clarification if needed, rather than simply flipping to the opposing view.
-        * Focus solely on whether the student's response matches what the rubric component asks for, even if either the rubric or the response contains factual inaccuracies.
-        * Do not use your own knowledge to judge the correctness of the information provided.
-        * If the rubric component asks for a specific statement or concept, check if the student's response includes that exact statement or concept, regardless of its accuracy.
+        Additionally:
+        - Maintain a balanced and confident approach
+        - Justify your evaluation with specific references to the text
+        - If the rubric asks for multiple elements, check for all of them
+        - Evaluate based on presence of concepts, not writing quality
         """)
     
     message_chain = [system_prompt, user_prompt]
