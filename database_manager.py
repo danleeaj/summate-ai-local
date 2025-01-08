@@ -1,4 +1,3 @@
-import psycopg
 from utils.config import connection_dict
 from typing import List
 
