@@ -20,13 +20,10 @@ def test_query_llm():
         model=LLMModel.GEMMA,
         validation_model=SimpleResponseModel
     )
-        
-    # Assert that we got a response
-    assert response is not None
-    # Assert that the response has the expected 'response' attribute
-    assert hasattr(response, 'response')
-    # Assert that the response is a string
-    assert isinstance(response.response, str)
+
+    assert response is not None # Response is received
+    assert hasattr(response, 'response') # Response has response attribute
+    assert isinstance(response.response, str) # Response is a string
 
 if __name__ == "__main__":
     test_query_llm()
