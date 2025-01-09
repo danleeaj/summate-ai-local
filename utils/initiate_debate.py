@@ -31,23 +31,32 @@ def initiate_debate(query: QueryModel, grader1_model: LLMModel = LLMModel.GEMMA,
 
         grader1_start_time = datetime.now()
 
+        ic("Grader 1 is thinking.")
+
         grader1_response = query_large_language_model(query=grader1_message_list,
                                                     model=grader1_model,
                                                     validation_model=GraderResponseModel)
-        
+
+        ic("Grader 1 response is received.")
+
         grader1_response_formatted = ResponseModel(type="Grader",
                                                 model=grader1_model,
                                                 content=grader1_response,
                                                 time_requested=grader1_start_time,
                                                 time_completed=datetime.now())
         
-        ic("Grader 1 response has been received.")
+        ic("Grader 1 response is formatted.")
 
         grader2_start_time = datetime.now()
+
+        ic("Grader 2 is thinking.")
+
         
         grader2_response = query_large_language_model(query=grader2_message_list,
                                                     model=grader2_model,
                                                     validation_model=GraderResponseModel)
+        
+        ic("Grader 2 response is received.")
 
         grader2_response_formatted = ResponseModel(type="Grader",
                                                 model=grader2_model,
@@ -55,19 +64,25 @@ def initiate_debate(query: QueryModel, grader1_model: LLMModel = LLMModel.GEMMA,
                                                 time_requested=grader2_start_time,
                                                 time_completed=datetime.now())
         
-        ic("Grader 2 response has been received.")
+        ic("Grader 2 response has been formatted.")
 
         evaluator_start_time = datetime.now()
+
+        ic("Evaluator is thinking.")
 
         evaluator_response = query_large_language_model(query=initial_prompt_to_evaluator(grader1_response, grader2_response),
                                                         model=evaluator_model,
                                                         validation_model=EvaluatorResponseModel)
+        
+        ic("Evaluator response has been received.")
 
         evaluator_response_formatted = ResponseModel(type="Evaluator",
                                                     model=evaluator_model,
                                                     content=evaluator_response,
                                                     time_requested=evaluator_start_time,
                                                     time_completed=datetime.now())
+        
+        ic("Evaluator response has been formatted.")
         
         round_formatted = RoundModel(responses=[grader1_response_formatted, grader2_response_formatted, evaluator_response_formatted])
 
@@ -78,11 +93,18 @@ def initiate_debate(query: QueryModel, grader1_model: LLMModel = LLMModel.GEMMA,
 
         consensus_reached = evaluator_response.gradersAgree
 
+        if not consensus_reached:
+            ic("Consensus has not been reached, starting next round of debate.")
+
+    ic("Consensus has been reached.")
+
     debate_formatted = DebateModel(evaluation=evaluator_response.consensusEvaluation,
                                    query=query,
                                    round_count=len(round_list),
                                    rounds=round_list
                                    )
+    
+    ic("Debate has been formatted.")
 
     ic(f"The evaluation is: {debate_formatted.evaluation}")
     

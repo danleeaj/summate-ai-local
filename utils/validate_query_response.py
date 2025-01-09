@@ -22,17 +22,18 @@ def clean_string(input: str) -> str:
     return clean_input
 
 def validate_query_response(input:str, model:BaseModel) -> BaseModel:
+
     clean_response = clean_string(input)
 
     try:
-        parsed_model = model.model_validate_json(json_data=clean_response)
-        return parsed_model
-    except ValidationError as e:
-        print("Validation Error:", e)
-        print(clean_response)
+        json_parse = json.dumps(json.loads(clean_response))
+        try:
+            parsed_model = model.model_validate_json(json_data=json_parse)
+            return parsed_model
+        except ValidationError as e:
+            print("Validation Error:", e)
+            print(json_parse)
     except json.JSONDecodeError as e:
         print("JSON Decode Error:", e)
-        print(clean_response)
-    except Exception as e:
-        print("Unexpected Error:", e)
+        print()
         print(clean_response)
