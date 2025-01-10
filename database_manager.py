@@ -7,20 +7,49 @@ from models.database_models.question_model import QuestionModel
 from models.database_models.response_model import ResponseModel
 from models.database_models.rubric_model import RubricModel
 
-def add_debate(conn, debate: DebateModel, rubric_id: int, response_id: int) -> str:
+def add_debate(conn, table_id: str, debate: DebateModel, rubric_id: int, response_id: int) -> str:
+
+    int_evaluation = None
 
     with conn.cursor() as cur:
 
         try:
 
             cur.execute(
-                """
-                INSERT INTO debates (evaluation, debate, rubric_id, response_id) 
+                f"""
+                CREATE TABLE IF NOT EXISTS {table_id} (
+                    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                    evaluation integer NOT NULL,
+                    debate json NOT NULL,
+                    rubric_id integer REFERENCES rubrics(id),
+                    response_id integer REFERENCES responses(id)
+                );"""
+            )
+        
+        except Exception as e:
+            conn.rollback()
+            raise e
+
+    match debate.evaluation:
+        case "Yes":
+            int_evaluation = 1
+        case "No":
+            int_evaluation = 0
+        case _:
+            int_evaluation = 2
+
+    with conn.cursor() as cur:
+
+        try:
+
+            cur.execute(
+                f"""
+                INSERT INTO {table_id} (evaluation, debate, rubric_id, response_id) 
                 VALUES (%s, %s, %s, %s)
                 RETURNING id
                 """,
                 (
-                    debate.evaluation == "Yes",
+                    int_evaluation,
                     debate.model_dump_json(),
                     rubric_id,
                     response_id,

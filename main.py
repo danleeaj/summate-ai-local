@@ -4,6 +4,8 @@ from utils.initiate_debate import initiate_debate
 from models.prompt_models.query_model import QueryModel
 from database_manager import add_debate
 
+from datetime import datetime
+
 def process_unevaluated_responses():
     connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
     
@@ -22,7 +24,7 @@ def process_unevaluated_responses():
                 FROM responses r
                 JOIN questions q ON r.question_id = q.id
                 JOIN rubrics ru ON q.id = ru.question_id
-                LEFT JOIN debates d ON r.id = d.response_id AND ru.id = d.rubric_id
+                LEFT JOIN debates1 d ON r.id = d.response_id AND ru.id = d.rubric_id
                 WHERE d.id IS NULL
             """)
             
@@ -55,11 +57,21 @@ def process_unevaluated_responses():
                     continue
 
 def main():
+    
+    start_time = datetime.now()
+    print(f"Starting processing at: {start_time}")
+    
     try:
         process_unevaluated_responses()
         print("Successfully completed processing unevaluated responses")
     except Exception as e:
         print(f"Error in main execution: {str(e)}")
+    finally:
+        end_time = datetime.now()
+        duration = end_time - start_time
+        print(f"Finished at: {end_time}")
+        print(f"Total processing time: {duration}")
+    
 
 if __name__ == "__main__":
     main()

@@ -25,47 +25,40 @@ def initial_prompt_to_evaluator(grader1response: GraderResponseModel, grader2res
 
     user_prompt = MessageModel(role="user",
                                content=f"""
-        Please analyze these two grading evaluations:
+        Analyze these grading evaluations:
 
         Grader 1: '{grader1response_string}'
         Grader 2: '{grader2response_string}'
 
-        Conduct your analysis through these steps:
+        1. IDENTIFY CORE ELEMENTS:
+        - What key evidence does each grader cite?
+        - What are their main observations about the student's response?
+        - What core reasoning leads to their conclusions?
 
-        1. SURFACE ANALYSIS:
-        - Document the yes/no determinations from each grader
-        - Note immediate apparent agreement or disagreement
-        - Identify key phrases and reasoning from each grader
+        2. COMPARE FUNDAMENTAL REASONING:
+        - Are graders looking at the same evidence?
+        - Do they make similar observations about this evidence?
+        - Are their reasoning processes compatible or contradictory?
 
-        2. REASONING COMPARISON:
-        - Break down each grader's core arguments
-        - Identify specific evidence they cited
-        - Compare their interpretation of key concepts
-        - Look for overlapping or contradicting logic
+        3. DETERMINE AGREEMENT STATUS:
+        Graders AGREE if:
+        - They reach the same conclusion using compatible reasoning
+        - They identify the same key evidence, even if emphasized differently
+        - Their core analysis aligns, even if expressed differently
+        - They use different words to describe the same concept or observation
 
-        3. DEPTH OF AGREEMENT ANALYSIS:
-        - Evaluate if graders used similar criteria even if reaching different conclusions
-        - Check if same conclusions were reached using contradictory reasoning
-        - Assess if graders are interpreting the rubric component similarly
-        - Consider if their disagreement is substantive or terminological
+        Graders DISAGREE if:
+        - They interpret the same evidence in fundamentally different ways
+        - Their core reasoning contradicts each other
+        - They focus on completely different aspects of the response
+        - They have incompatible standards for evaluation
 
-        4. CONSENSUS EVALUATION:
-        - Determine if there is true agreement in both conclusion AND reasoning
-        - If conclusions differ, assess if the disagreement is fundamental
-        - If reasoning differs but conclusions match, evaluate if this constitutes true agreement
-        - Consider if differences in interpretation are significant enough to nullify surface agreement
+        NOTE: Different wording or emphasis does NOT constitute disagreement if the underlying analysis is compatible.
 
-        Remember:
-        - True agreement requires alignment in both conclusion and underlying reasoning
-        - Surface agreement with contradictory reasoning should be treated as disagreement
-        - Different terminology expressing the same concept should be recognized as agreement
-        - Focus on substantive differences rather than stylistic ones
-
-        After your analysis, provide:
-        1. Whether the graders truly agree (considering both conclusion and reasoning)
-        2. The consensus evaluation (Yes/No/No consensus reached)
-        3. A clear explanation of your determination referencing specific aspects of both responses
-        """)
+        Provide:
+        1. Whether the graders fundamentally agree
+        2. If they agree, state their consensus evaluation
+        3. A clear explanation focused on core reasoning rather than wording differences""")
     
     message_chain = [system_prompt, user_prompt]
 
@@ -86,7 +79,13 @@ def initial_prompt_to_grader(query: QueryModel) -> List[MessageModel]:
     context = query.context if query.context else None
 
     system_prompt = MessageModel(role="system",
-                                 content=f"You are a biology grading assistant. Your task is to evaluate student responses to determine if the rubric component is explicitly addressed{', taking into account the information provided to the student in the context section' if context else ''}, regardless of its factual accuracy. Do not use your own knowledge to judge the correctness of the rubric component or the student's response. Your role is to check if the student's response matches what the rubric asks for, even if the rubric component itself contains inaccuracies.")
+                                 content=f"""You are a biology grading assistant. Your task is to evaluate student responses to determine if the rubric component is adequately addressed{', taking into account the information provided to the student in the context section' if context else ''}. 
+                                 
+                                Key Evaluation Principles:
+                                1. Consider both explicit statements AND implicit demonstration of understanding
+                                2. Technical concepts can be demonstrated through proper usage, even without detailed explanations
+                                3. Focus on evidence that the student understands the core concept, not just their ability to explain it technically
+                                4. Consider the appropriate level of detail for an undergraduate student response""")
 
     user_prompt = MessageModel(role="user",
                                content=f"""
@@ -94,44 +93,46 @@ def initial_prompt_to_grader(query: QueryModel) -> List[MessageModel]:
         The student response is: '{student_response}'.
         {'The context is: ' + f"'{context}'" if context else ''}
 
-        Your task is to evaluate if the student's response demonstrates understanding of the core concepts in the rubric component. Walk through your analysis step by step:
+        Your task is to evaluate if the student's response demonstrates understanding of the core concepts in the rubric component. Follow this analysis process:
 
-        1. ANALYSIS OF RUBRIC:
-        - Break down the key concepts and requirements from the rubric component
-        - What are the essential ideas that must be demonstrated?
+        1. RUBRIC ANALYSIS:
+        - What is the core concept being evaluated?
+        - What would demonstrate understanding of this concept?
+        - What level of detail is appropriate for this concept?
 
-        2. ANALYSIS OF RESPONSE:
-        - Identify relevant portions of the student's response
-        - Look for both direct statements and implied understanding
-        - Consider alternative phrasings and terminology that convey the same concepts
+        2. RESPONSE ANALYSIS:
+        - Identify where the concept appears in the response
+        - Look for both explicit statements and implicit demonstrations
+        - Consider if the student's usage shows understanding
 
         3. EVIDENCE EVALUATION:
-        - Match concepts from the rubric to evidence in the response
-        - Consider semantic equivalence and contextual meaning
-        - Note any missing or misunderstood concepts
-        - Assess if implied or indirect demonstrations of knowledge are sufficient
+        - Does the student demonstrate understanding through either:
+          * Explicit explanation of the concept, OR
+          * Correct application/usage of the concept
+        - Is the level of detail appropriate for the context?
+        - Does the response show the student knows what to do, even if they don't explain every detail?
 
         4. FINAL DETERMINATION:
-        After completing your analysis, provide your final evaluation of whether the rubric component is satisfied.
+        Provide your evaluation of whether the rubric component is satisfied.
 
-        Important evaluation guidelines:
-        - Focus on conceptual understanding rather than exact wording matches
-        - Students may use different terminology to express the same ideas
-        - Consider the context of the field when evaluating semantic equivalence
-        - Look for evidence of understanding rather than perfect articulation
-        - If a concept is implied through a clear description of its implementation or consequences, consider it present
+        Evaluation Guidelines:
+        - Understanding can be demonstrated through proper application
+        - Technical processes don't always need step-by-step explanation
+        - Consider the context and expected level of detail
+        - Look for evidence of conceptual understanding, not just technical explanation
 
-        Examples of semantic equivalence:
-        - "Gather all lines" = "Compile all lines" = "Collect all lines" = "Put together all lines"
-        - "Gauge reliability" = "Assess reliability" = "Evaluate reliability" = "Determine reliability"
-        - "Plot together" = "Display together" = "Show together" = "Visualize together"
+        Examples of Demonstrating Understanding:
+        - Direct explanation: "Calculate the slope and intercept..."
+        - Implicit demonstration: "Find the line of best fit" (implies determining coefficients)
+        - Process description: "Generate the regression line" (implies using coefficients)
+        - Application: "Plot the fitted line" (shows understanding of using coefficients)
 
         Your response MUST:
-        1. Show your complete thought process through steps 1-3
-        2. Only provide your final determination (satisfied/unsatisfied) AFTER showing this analysis
-        3. End with the word "EVALUATION:" followed by your clear Yes/No determination and brief summary of why
+        1. Show your analysis through steps 1-3
+        2. Provide your final determination (satisfied/unsatisfied) based on demonstrated understanding
+        3. End with "EVALUATION:" followed by a clear Yes/No determination and brief explanation
 
-        """)
+        Important: Focus on whether the student demonstrates they know what to do, not whether they explain every technical detail.""")
 
     message_chain = [system_prompt, user_prompt]
 
