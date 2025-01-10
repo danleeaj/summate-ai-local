@@ -7,7 +7,7 @@ from models.database_models.question_model import QuestionModel
 from models.database_models.response_model import ResponseModel
 from models.database_models.rubric_model import RubricModel
 
-def add_debate(conn, table_id: str, debate: DebateModel, rubric_id: int, response_id: int) -> str:
+def add_debate(conn, table_id: str, debate: DebateModel) -> str:
 
     int_evaluation = None
 
@@ -20,9 +20,7 @@ def add_debate(conn, table_id: str, debate: DebateModel, rubric_id: int, respons
                 CREATE TABLE IF NOT EXISTS {table_id} (
                     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                     evaluation integer NOT NULL,
-                    debate json NOT NULL,
-                    rubric_id integer REFERENCES rubrics(id),
-                    response_id integer REFERENCES responses(id)
+                    debate json NOT NULL
                 );"""
             )
         
@@ -44,15 +42,13 @@ def add_debate(conn, table_id: str, debate: DebateModel, rubric_id: int, respons
 
             cur.execute(
                 f"""
-                INSERT INTO {table_id} (evaluation, debate, rubric_id, response_id) 
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO {table_id} (evaluation, debate) 
+                VALUES (%s, %s)
                 RETURNING id
                 """,
                 (
                     int_evaluation,
                     debate.model_dump_json(),
-                    rubric_id,
-                    response_id,
                 )
             )
             debate_id = cur.fetchone()[0]

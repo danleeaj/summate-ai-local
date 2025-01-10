@@ -4,7 +4,9 @@ from database_manager import add_debate
 
 from utils.config import connection_dict
 
-import psycopg
+from psycopg2 import pool
+
+# import psycopg
 
 # This should evaluate to TRUE. Check with Ashley for this question. Use these questions to test for consistency.
 # rubric_id = 5, response_id = 1
@@ -27,20 +29,36 @@ query3 = QueryModel(rubric_component="Resampling done with replacement",
                     context="Describe, step-by-step, the process of bootstrapping to estimate the reliability of coefficients fit by a linear model."
                     )
 
-for i in range(9):
+response = initiate_debate(query=query3)
 
-    response = initiate_debate(query=query1)
+print(response.model_dump_json(indent=2))
 
-    print(response.model_dump_json(indent=2))
+for i in range(10):
 
-    connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
+    response = initiate_debate(query=query3)
 
-    with psycopg.connect(connection_string) as conn:
+    connection_string = "postgresql://summate_db_owner:TzQXwGr8kna9@ep-hidden-salad-a508zr13.us-east-2.aws.neon.tech/summate_db?sslmode=require"
 
-        add_debate(
-            conn=conn,
-            table_id="debates_consistency_mad_q2",
-            debate=response,
-            response_id=1,
-            rubric_id=7,
-        )
+    connection_pool = pool.SimpleConnectionPool(
+        1,  # Minimum number of connections in the pool
+        10,  # Maximum number of connections in the pool
+        connection_string
+    )
+
+    if connection_pool:
+        print("Connection pool created successfully")
+        
+    conn = connection_pool.getconn()
+
+    cur = conn.cursor()
+
+    add_debate(
+        conn=conn,
+        table_id="test_table",
+        debate=response
+    )
+    
+    cur.close()
+    connection_pool.putconn(conn)
+    # Close all connections in the pool
+    connection_pool.closeall()
