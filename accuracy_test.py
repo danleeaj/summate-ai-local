@@ -1,8 +1,11 @@
 from models.prompt_models.query_model import QueryModel
 from pydantic import BaseModel
 from utils.initiate_debate import initiate_debate
+from utils.old_initiate_debate import old_initiate_debate
 
 from utils.database_manager import DebateDatabase
+
+from utils.llm_models import LLMModel
 
 class PlaceholderModel(BaseModel):
     content: int
@@ -43,7 +46,7 @@ responses = [
 
 MAX_RETRIES = 3
 
-def test_matrix(responses, components, question, test_name):
+def test_matrix(responses, components, question, test_name, model: LLMModel):
 
     db = DebateDatabase(test_name=test_name)
 
@@ -64,7 +67,7 @@ def test_matrix(responses, components, question, test_name):
 
             while not debate and retry_count < MAX_RETRIES:
                 try:
-                    debate = initiate_debate(query=query)
+                    debate = initiate_debate(query=query, grader1_model=model, grader2_model=model, evaluator_model=model)
                 except Exception as e:
                     print(f"Error in debate: {e}")
                     retry_count += 1
@@ -84,7 +87,52 @@ def test_matrix(responses, components, question, test_name):
                 int_evaluation = 3
                 debate = placeholder
 
-            db.add_row((response['id'], component['id'], int_evaluation, "gemma9b", debate))
+            db.add_row((response['id'], component['id'], int_evaluation, model.value, debate))
+
+def test_matrix_old(responses, components, question, test_name, model: LLMModel):
+
+    db = DebateDatabase(test_name=test_name)
+
+    for response in responses:
+
+        for component in components:
+
+            print("\nGrading following query:")
+            query = QueryModel(
+                rubric_component=component['component'],
+                student_response=response['response'],
+                context=question
+            )
+            print(query.model_dump_json(indent=2))
+
+            debate = None
+            retry_count = 0
+
+            while not debate and retry_count < MAX_RETRIES:
+                try:
+                    debate = old_initiate_debate(query=query, grader1_model=model, grader2_model=model, evaluator_model=model)
+                except Exception as e:
+                    print(f"Error in debate: {e}")
+                    retry_count += 1
+
+            if not debate and retry_count == MAX_RETRIES:
+                print(f"Failed to initiate debate after {MAX_RETRIES} attempts")
+
+            if debate:
+                match debate.evaluation:
+                    case "Yes":
+                        int_evaluation = 1
+                    case "No":
+                        int_evaluation = 0
+                    case _:
+                        int_evaluation = 2
+            else:
+                int_evaluation = 3
+                debate = placeholder
+
+            db.add_row((response['id'], component['id'], int_evaluation, model.value, debate))
 
 if __name__ == "__main__":
-    test_matrix(responses, rubric_components, question, "accuracy_mad+think_gemma9b")
+    test_matrix(responses, rubric_components, None, "accuracy_mad_think_gemma9b_orig", LLMModel.GEMMA)
+    test_matrix(responses, rubric_components_new, None, "accuracy_mad_think_gemma9b_new", LLMModel.GEMMA)
+    test_matrix_old(responses, rubric_components, None, "accuracy_mad_nothink_gemma9b_orig", LLMModel.GEMMA)

@@ -39,21 +39,3 @@ query4 = QueryModel(rubric_component="Resampling done with replacement",
 
 response = initiate_debate(query=query4)
 print(response.model_dump_json(indent=2))
-
-# for i in range(9):
-
-#     response = initiate_debate(query=query1)
-
-#     print(response.model_dump_json(indent=2))
-
-#     connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
-
-#     with psycopg.connect(connection_string) as conn:
-
-#         add_debate(
-#             conn=conn,
-#             table_id="debates_consistency_mad_q2",
-#             debate=response,
-#             response_id=1,
-#             rubric_id=7,
-#         )
