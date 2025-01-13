@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class GraderResponseModel(BaseModel):
     """
@@ -10,3 +11,4 @@ class GraderResponseModel(BaseModel):
     """
     rubricComponentSatisfied: bool
     explanation: str
+    thought: Optional[str] = None

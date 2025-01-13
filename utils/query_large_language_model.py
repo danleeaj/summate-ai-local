@@ -1,6 +1,8 @@
 from ollama import chat
 from ollama import ChatResponse
 
+from utils.clean_text import clean_text_for_db
+
 from icecream import ic
 
 from typing import List
@@ -30,7 +32,9 @@ def query_large_language_model(query: List[BaseModel], model: LLMModel, validati
     
     message_to_be_jsonified = response.message.content
 
-    ic(message_to_be_jsonified)
+    chain_of_thought = clean_text_for_db(message_to_be_jsonified)
+
+    ic(chain_of_thought)
 
     json_message_list = []
     json_message_models = prompt_to_jsonifier(validation_model=validation_model, message_to_be_jsonified=message_to_be_jsonified)
@@ -42,8 +46,11 @@ def query_large_language_model(query: List[BaseModel], model: LLMModel, validati
     while tries < max and not validated_response:
 
         print(f"Attempt {tries} to parse JSON")
+        # At this step, a object with everything, less the chain of thought, is returned
         json_response: ChatResponse = chat(model=LLMModel.GEMMA.value, messages=json_message_list)
+        # Here, validation fails
         validated_response = validate_query_response(json_response.message.content, validation_model)
+        validated_response.thought = chain_of_thought
         tries += 1
 
     if tries == max:

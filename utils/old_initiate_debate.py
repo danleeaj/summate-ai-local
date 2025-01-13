@@ -7,7 +7,7 @@ from models.response_models.evaluator_response_model import EvaluatorResponseMod
 from utils.validate_query_response import validate_query_response
 
 from utils.query_large_language_model import query_large_language_model
-from utils.message_generation import initial_prompt_to_grader, initial_prompt_to_evaluator, followup_prompt_to_grader
+from utils.old_message_generation import initial_prompt_to_grader, initial_prompt_to_evaluator, followup_prompt_to_grader
 
 from models.debate_models.debate_model import DebateModel
 from models.debate_models.response_model import ResponseModel

@@ -13,6 +13,11 @@ query1 = QueryModel(rubric_component="Determine the coefficients from the line o
                     context="Describe, step-by-step, the process of bootstrapping to estimate the reliability of coefficients fit by a linear model."
                     )
 
+query1_5 = QueryModel(rubric_component="Response mentions calculating a metric from each resampling. Does not need to specify which one.",
+                    student_response="Bootstrapping creates a confidence interval of possible lines of best fit. 1) Obtain a sample data set from observation/experiment with replacement. 2) Generate a new randomized data set from the sample data set (step 1) that has the same number of observations. ex: sample has 1000 points, new data set has 1000 based on this. 3) Repeat step 2 multiple times (>10) and determine the line of best fit for each scatter plot. 4) Place these lines on a scatter plot and a range of linear lines should be seen, this will determine if the original line is within the range of a reliable fit (confidence interval of linear model lines)",
+                    context="Describe, step-by-step, the process of bootstrapping to estimate the reliability of coefficients fit by a linear model."
+                    )
+
 # This should evaluate to TRUE.
 # rubric_id = 7, response_id = 1
 query2 = QueryModel(rubric_component="Gather all lines of best fit to gauge reliability (plot all lines together or plot histogram of coeﬃcients)",
@@ -27,20 +32,28 @@ query3 = QueryModel(rubric_component="Resampling done with replacement",
                     context="Describe, step-by-step, the process of bootstrapping to estimate the reliability of coefficients fit by a linear model."
                     )
 
-for i in range(9):
+query4 = QueryModel(rubric_component="Resampling done with replacement",
+                    student_response="So lets say you are plotting data about the amount of hours each student studies for an exam. You can use bootstrapping by taking multiple replaceable trials to estimate the reliability of fit given by each plot generated. Since you are replacing the outcome of each trial you can predict how reliable the plots are and compare them to all the data acquired. The whole point of bootstrapping is that the trials are repeatable and replaceable in your experiment trials.",
+                    context="Describe, step-by-step, the process of bootstrapping to estimate the reliability of coefficients fit by a linear model."
+                    )
 
-    response = initiate_debate(query=query1)
+response = initiate_debate(query=query4)
+print(response.model_dump_json(indent=2))
 
-    print(response.model_dump_json(indent=2))
+# for i in range(9):
 
-    connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
+#     response = initiate_debate(query=query1)
 
-    with psycopg.connect(connection_string) as conn:
+#     print(response.model_dump_json(indent=2))
 
-        add_debate(
-            conn=conn,
-            table_id="debates_consistency_mad_q2",
-            debate=response,
-            response_id=1,
-            rubric_id=7,
-        )
+#     connection_string = " ".join(f"{key}={value}" for key, value in connection_dict.items())
+
+#     with psycopg.connect(connection_string) as conn:
+
+#         add_debate(
+#             conn=conn,
+#             table_id="debates_consistency_mad_q2",
+#             debate=response,
+#             response_id=1,
+#             rubric_id=7,
+#         )

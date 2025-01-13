@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, Optional
 
 class EvaluatorResponseModel(BaseModel):
     """
@@ -13,3 +13,4 @@ class EvaluatorResponseModel(BaseModel):
     gradersAgree: bool
     consensusEvaluation: Literal['Yes', 'No', 'No consensus reached']
     explanation: str
+    thought: Optional[str] = None

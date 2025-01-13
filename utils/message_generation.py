@@ -79,13 +79,12 @@ def initial_prompt_to_grader(query: QueryModel) -> List[MessageModel]:
     context = query.context if query.context else None
 
     system_prompt = MessageModel(role="system",
-                                 content=f"""You are a biology grading assistant. Your task is to evaluate student responses to determine if the rubric component is adequately addressed{', taking into account the information provided to the student in the context section' if context else ''}. 
+                                 content=f"""You are a biology grading assistant. Your task is to evaluate student responses to determine if the rubric component is addressed{', taking into account the information provided to the student in the context section' if context else ''}. 
                                  
                                 Key Evaluation Principles:
                                 1. Consider both explicit statements AND implicit demonstration of understanding
                                 2. Technical concepts can be demonstrated through proper usage, even without detailed explanations
-                                3. Focus on evidence that the student understands the core concept, not just their ability to explain it technically
-                                4. Consider the appropriate level of detail for an undergraduate student response""")
+                                3. Focus on evidence that the student understands the core concept, not just their ability to explain it technically""")
 
     user_prompt = MessageModel(role="user",
                                content=f"""
@@ -98,41 +97,35 @@ def initial_prompt_to_grader(query: QueryModel) -> List[MessageModel]:
         1. RUBRIC ANALYSIS:
         - What is the core concept being evaluated?
         - What would demonstrate understanding of this concept?
-        - What level of detail is appropriate for this concept?
+        - Note any OR conditions that provide multiple valid paths to satisfaction
+        - List each possible path to satisfaction separately
+        - Remember: Only ONE path needs to be satisfied
+        - Example: If rubric says "A or B", student only needs A OR B, not both
 
         2. RESPONSE ANALYSIS:
-        - Identify where the concept appears in the response
-        - Look for both explicit statements and implicit demonstrations
-        - Consider if the student's usage shows understanding
+        - Quote the EXACT portions of the response that relate to the rubric component
 
         3. EVIDENCE EVALUATION:
-        - Does the student demonstrate understanding through either:
-          * Explicit explanation of the concept, OR
-          * Correct application/usage of the concept
-        - Is the level of detail appropriate for the context?
-        - Does the response show the student knows what to do, even if they don't explain every detail?
+        - Does the student demonstrate understanding through explicit explanation of the concept?
+        - Does the evidence match the EXACT level of detail required?
+        - Avoid requiring more specificity than the rubric demands
 
         4. FINAL DETERMINATION:
-        Provide your evaluation of whether the rubric component is satisfied.
+        Based strictly on the evidence found, determine if the rubric requirements are met.
 
         Evaluation Guidelines:
-        - Understanding can be demonstrated through proper application
-        - Technical processes don't always need step-by-step explanation
-        - Consider the context and expected level of detail
-        - Look for evidence of conceptual understanding, not just technical explanation
-
-        Examples of Demonstrating Understanding:
-        - Direct explanation: "Calculate the slope and intercept..."
-        - Implicit demonstration: "Find the line of best fit" (implies determining coefficients)
-        - Process description: "Generate the regression line" (implies using coefficients)
-        - Application: "Plot the fitted line" (shows understanding of using coefficients)
+        - Require clear, direct evidence for each component
+        - Look for specific terminology and clear explanations
+        - Do not make assumptions about student knowledge
+        - Do not give benefit of doubt for unclear or ambiguous statements
 
         Your response MUST:
-        1. Show your analysis through steps 1-3
-        2. Provide your final determination (satisfied/unsatisfied) based on demonstrated understanding
-        3. End with "EVALUATION:" followed by a clear Yes/No determination and brief explanation
+        1. List specific requirements from the rubric
+        2. Quote exact evidence from the response
+        3. Explain how the evidence matches or doesn't match the requirement
+        4. End with "EVALUATION:" followed by Yes/No and specific missing or satisfied elements
 
-        Important: Focus on whether the student demonstrates they know what to do, not whether they explain every technical detail.""")
+        Focus on what is explicitly present in the response, not what might be implied or assumed.""")
 
     message_chain = [system_prompt, user_prompt]
 
@@ -149,7 +142,7 @@ def prompt_to_jsonifier(validation_model, message_to_be_jsonified):
 
     grader_json_schema = """{
         "rubricComponentSatisfied": <True/False based on Yes/No>,
-        "explanation": <concise summary of key reasoning>
+        "explanation": <structured reasoning outlining the key evidence found, the grader's interpretation of this evidence, and the decision based on this evidence>
     }
 """
 
@@ -163,31 +156,42 @@ def prompt_to_jsonifier(validation_model, message_to_be_jsonified):
 
     system_prompt = MessageModel(role="system", 
                                content=f"""
-                               
-                               You are a JSON formatter. Your task is to convert a detailed grading analysis into a standardized JSON response.
-                 
-                               The input will contain a complete analysis followed by a final evaluation. Your job is to:
-                               1. Identify the final Yes/No determination
-                               2. Extract the key reasoning from the analysis
-                               3. Format these into valid JSON
-
-                               Rules for JSON creation:
-                               1. Only include the final determination, not intermediate thoughts
-                               2. Summarize the key reasoning in 2-3 clear sentences
-                               3. Format the response exactly as:
-
-                               {schema}
+                            You are a JSON formatter. Your task is to convert a detailed grading analysis into a standardized JSON response.
                 
-                               Format requirements:
+                            The input will contain a complete analysis followed by a final evaluation. Your job is to:
+                            1. Identify the final Yes/No determination
+                            2. Extract the key reasoning from the analysis
+                            3. Format these into valid JSON
+
+                            Rules for JSON creation:
+                            1. Only include the final determination, not intermediate thoughts
+                            2. Summarize the key reasoning in 2-3 clear sentences
+                            3. Format the response exactly as:
+
+                            {schema}
+            
+                            Format requirements:
+            
+                            - Use exact property names as shown
+                            - Use true/false (not "true"/"false" or Yes/No)
+                            - Keep explanation clear and concise
+                            - Ensure valid JSON syntax by using double quotes for all strings
+                            - Property names and string values must use double quotes, not single quotes
+                            - ALL other occurances of double quotes should be in single quotes
+                            - Do not include any other fields
+                            - Do not include any text before or after the JSON
+                            - Format must be strictly valid JSON that could be parsed by json.loads()
                 
-                               - Use exact property names as shown
-                               - Use true/false (not "true"/"false" or Yes/No)
-                               - Keep explanation clear and concise
-                               - Ensure valid JSON syntax
-                               - Do not include any other fields
-                               - Do not include any text before or after the JSON
-                 
-                               """)
+                            Example of correct string formatting:
+                            {{
+                                "propertyName": "This is a properly formatted string value"
+                            }}
+
+                            Example of incorrect string formatting:
+                            {{
+                                'propertyName': 'This uses invalid single quotes'
+                            }}
+                            """)
     
     user_prompt = MessageModel(role="user",
                              content=f"""Format this text into JSON according to the schema:
