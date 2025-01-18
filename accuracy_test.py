@@ -17,6 +17,7 @@ from models.prompt_models.query_model import QueryModel
 from pydantic import BaseModel
 from utils.initiate_debate import initiate_debate
 from utils.old_initiate_debate import old_initiate_debate
+from utils.old_initiate_debate import old_initiate_debate
 
 from utils.database_manager import DebateDatabase
 
@@ -311,6 +312,7 @@ def test_matrix_old(responses, components, question, test_name, model: LLMModel)
 
             while not debate and retry_count < MAX_RETRIES:
                 try:
+                    debate = old_initiate_debate(query=query, grader1_model=model, grader2_model=model, evaluator_model=model)
                     debate = old_initiate_debate(query=query, grader1_model=model, grader2_model=model, evaluator_model=model)
                 except Exception as e:
                     print(f"Error in debate: {e}")
