@@ -7,3 +7,5 @@ class LLMModel(Enum):
     PHI = "phi3.5"
     GEMMA = "gemma2"
     LLAMA = "llama3.2"
+    GEMMA_2B = "gemma2:2b"
+    QWEN2 = "qwen2"

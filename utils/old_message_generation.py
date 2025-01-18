@@ -93,8 +93,8 @@ def initial_prompt_to_grader(query: QueryModel) -> List[MessageModel]:
         - "Plot together" = "Display together" = "Show together" = "Visualize together"
 
         Return your evaluation in JSON format with the following keys:
-        "rubricComponentSatisfied": <"Yes"/"No">
         "explanation": <A string explaining your reasoning that references specific parts of both the rubric and response>
+        "rubricComponentSatisfied": <"Yes"/"No">
 
         IMPORTANT INSTRUCTIONS:
         1. Your ENTIRE and ONLY output must be the JSON response

@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 
 from icecream import ic
 
-def initiate_debate(query: QueryModel, grader1_model: LLMModel = LLMModel.GEMMA, grader2_model: LLMModel = LLMModel.GEMMA, evaluator_model: LLMModel = LLMModel.GEMMA) -> DebateModel:
+def old_initiate_debate(query: QueryModel, grader1_model: LLMModel = LLMModel.GEMMA, grader2_model: LLMModel = LLMModel.GEMMA, evaluator_model: LLMModel = LLMModel.GEMMA) -> DebateModel:
 
     grader1_message_list = initial_prompt_to_grader(query)
     grader2_message_list = initial_prompt_to_grader(query)

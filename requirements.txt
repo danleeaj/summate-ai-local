@@ -6,5 +6,7 @@ psycopg
 
 python-dotenv
 
+icecream
+
 # GUI Stuff -----
 # PySide6

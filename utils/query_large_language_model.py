@@ -50,11 +50,12 @@ def query_large_language_model(query: List[BaseModel], model: LLMModel, validati
         json_response: ChatResponse = chat(model=LLMModel.GEMMA.value, messages=json_message_list)
         # Here, validation fails
         validated_response = validate_query_response(json_response.message.content, validation_model)
-        validated_response.thought = chain_of_thought
         tries += 1
 
     if tries == max:
     
         ic("Error in decoding JSON. Expect a downstream validation error.")
+    
+    validated_response.thought = chain_of_thought
 
     return validated_response

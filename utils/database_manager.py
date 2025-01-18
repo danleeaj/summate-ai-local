@@ -63,11 +63,29 @@ class DebateDatabase:
             row_data: tuple containing (response_id, rubric_id, evaluation, evaluator)
         
         Returns:
-            debate_id: string in format "response_id_rubric_id_evaluator"
+            debate_id: string in format "response_id_rubric_id_evaluator" with optional "_n" suffix
         """
         response_id, rubric_id, evaluation, evaluator, debate = row_data
-        debate_id = f"{response_id}_{rubric_id}_{evaluator}"
+        base_debate_id = f"{response_id}_{rubric_id}_{evaluator}"
+        debate_id = base_debate_id
         
+        # Check if debate_id exists and increment counter until finding unique id
+        counter = 1
+        while True:
+            self.cursor.execute("""
+                SELECT EXISTS(
+                    SELECT 1 FROM debates WHERE debate_id = ?
+                )
+            """, (debate_id,))
+            exists = self.cursor.fetchone()[0]
+            
+            if not exists:
+                break
+                
+            debate_id = f"{base_debate_id}_{counter}"
+            counter += 1
+        
+        # Insert with unique debate_id
         self.cursor.execute("""
             INSERT INTO debates 
             (response_id, rubric_id, evaluation, evaluator, debate_id)
@@ -77,6 +95,7 @@ class DebateDatabase:
         self.conn.commit()
 
         storeJson(debate, self.debates_dir, debate_id)
+        print(f"Row added at {debate_id}")
 
         return debate_id
 
